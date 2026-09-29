@@ -95,17 +95,17 @@ And no IDs are lost
 
 ## Definition of Done
 
-- [ ] All 5 tasks completed
-- [ ] Schema created and migrations working
-- [ ] Async writes implemented
-- [ ] Graceful degradation working
-- [ ] Integration tests pass
-- [ ] No data loss on DB recovery
+- [x] All 5 tasks completed
+- [x] Schema created and migrations working
+- [x] Async writes implemented
+- [x] Graceful degradation working
+- [x] Integration tests pass
+- [x] No data loss on DB recovery
 
 ## Status
 - [ ] Not started
 - [ ] In progress
-- [ ] Complete
+- [x] Complete ✅
 
 ## Related
 - Parent: Phase 300 Coding

@@ -9,6 +9,8 @@ services:
       POSTGRES_PASSWORD: changeme
     ports:
       - "5432:5432"
+    volumes:
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U app -d id_generator"]
       interval: 10s
@@ -25,6 +27,8 @@ services:
       DATACENTER_ID: 1
       MACHINE_ID: 1
       PORT: 5001
+      PERSISTENCE_ENABLED: "true"
+      POSTGRES_DSN: "postgresql://app:changeme@postgres:5432/id_generator"
     ports:
       - "5001:5001"
     depends_on:
@@ -46,6 +50,8 @@ services:
       DATACENTER_ID: 1
       MACHINE_ID: 2
       PORT: 5001
+      PERSISTENCE_ENABLED: "true"
+      POSTGRES_DSN: "postgresql://app:changeme@postgres:5432/id_generator"
     ports:
       - "5002:5001"
     depends_on:
@@ -67,6 +73,8 @@ services:
       DATACENTER_ID: 1
       MACHINE_ID: 3
       PORT: 5001
+      PERSISTENCE_ENABLED: "true"
+      POSTGRES_DSN: "postgresql://app:changeme@postgres:5432/id_generator"
     ports:
       - "5003:5001"
     depends_on:

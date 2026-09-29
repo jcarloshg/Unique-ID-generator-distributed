@@ -23,6 +23,10 @@ async def generate_id(request: Request) -> Response:
     """
     try:
         snowflake_id = request.app.state.id_generator.generate_id()
+
+        if request.app.state.write_queue:
+            request.app.state.write_queue.enqueue(snowflake_id)
+
         return JSONResponse(content={"id": snowflake_id.value})
     except ClockBackwardsError as e:
         logger.error(

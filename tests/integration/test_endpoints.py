@@ -36,6 +36,7 @@ def app() -> FastAPI:
         datacenter_id=1,
         machine_id=1,
     )
+    test_app.state.write_queue = None
     test_app.include_router(http_router)
     test_app.include_router(health_router)
     test_app.include_router(metrics_router)

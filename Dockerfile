@@ -5,7 +5,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
 
 COPY pyproject.toml poetry.lock* ./
-RUN pip install --no-cache-dir fastapi uvicorn[standard] pydantic structlog prometheus-client
+RUN pip install --no-cache-dir fastapi uvicorn[standard] pydantic structlog prometheus-client asyncpg
 
 COPY src /app/src
 
