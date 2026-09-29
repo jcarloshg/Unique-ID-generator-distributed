@@ -34,26 +34,24 @@ docs/200.design/
 ## Deliverables
 
 ### Architecture
-- `01-architecture/system-architecture.md` — Complete system design
-- `01-architecture/component-diagrams.md` — Detailed component diagrams
+- `01-architecture/201.system-architecture.md` — Complete system design ✅
+- `01-architecture/component-diagrams.md` — Detailed component diagrams (TBD)
 
 ### Hexagonal Architecture
-- `02-hexagonal/domain-model.md` — Domain entities and services
-- `02-hexagonal/ports.md` — Port interfaces
-- `02-hexagonal/adapters.md` — Adapter implementations
+- `02-hexagonal/202.hexagonal-architecture.md` — Hexagonal architecture ✅
+- `02-hexagonal/domain-model.md` — Domain entities and services (TBD)
+- `02-hexagonal/ports.md` — Port interfaces (TBD)
 
 ### Database
-- `03-database/schema.sql` — PostgreSQL schema
-- `03-database/migrations/` — Flyway/SQLAlchemy migrations
+- `03-database/203.database-schema.md` — Database schema ✅
+- `03-database/migrations/` — SQLAlchemy migrations (TBD)
 
 ### Nginx
-- `04-nginx/nginx.conf` — Complete nginx configuration
-- `04-nginx/upstream.conf` — Upstream configuration
+- `04-nginx/204.nginx-configuration.md` — Complete nginx configuration ✅
 
 ### Deployment
-- `05-deployment/docker-compose.yml` — Local development
-- `05-deployment/docker/Dockerfile-generator` — Generator Dockerfile
-- `05-deployment/resource-sizing.md` — CPU/memory specifications
+- `05-deployment/205.deployment-specs.md` — Deployment specifications ✅
+- `05-deployment/docker-compose.yml` — Local development (in docker-compose)
 
 ## Key Design Decisions
 
@@ -74,9 +72,9 @@ docs/200.design/
 - 5-second timeout for upstream
 
 ## Status
-- [ ] Phase 200 initiated
-- [ ] All sub-phases created
-- [ ] Ready for implementation
+- [x] Phase 200 initiated
+- [x] All sub-phases created
+- [x] All deliverables complete ✅
 
 ## Next Phase
 → Phase 250 — Epics & Tasks

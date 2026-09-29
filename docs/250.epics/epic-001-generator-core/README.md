@@ -3,17 +3,97 @@
 ## Overview
 Implement the core Snowflake ID generation algorithm with HTTP interface.
 
+## Epic Goal
+A working generator service that produces unique 64-bit Snowflake IDs via HTTP.
+
 ## Tasks
 
-| Task | Description | Layer | Effort |
-|------|-------------|-------|--------|
-| 001 | Project scaffolding | Delivery | 2h |
-| 002 | Implement Snowflake domain service | Domain | 4h |
-| 003 | Implement clock abstraction | Domain | 2h |
-| 004 | Implement HTTP controller | Transport | 2h |
-| 005 | Add /health endpoint | Transport | 1h |
-| 006 | Add /metrics endpoint | Transport | 2h |
-| 007 | Unit tests for domain | Testing | 4h |
+### Task 001: Project Scaffolding
+- **Layer:** Delivery
+- **Effort:** 2h
+- **Files Created:**
+  - `src/generator/__init__.py`
+  - `src/generator/main.py`
+  - `pyproject.toml`
+  - `poetry.lock`
+
+### Task 002: Snowflake Domain Service
+- **Layer:** Domain
+- **Effort:** 4h
+- **Files Created:**
+  - `src/generator/domain/__init__.py`
+  - `src/generator/domain/models/__init__.py`
+  - `src/generator/domain/models/snowflake_id.py`
+  - `src/generator/domain/services/__init__.py`
+  - `src/generator/domain/services/id_generator.py`
+- **Acceptance Criteria:**
+  - `IdGeneratorService.generate_id()` returns `SnowflakeId`
+  - ID is 64-bit integer
+  - ID contains correct timestamp, datacenter, machine, sequence bits
+
+### Task 003: Clock Abstraction
+- **Layer:** Domain
+- **Effort:** 2h
+- **Files Created:**
+  - `src/generator/domain/ports/__init__.py`
+  - `src/generator/domain/ports/clock.py`
+  - `src/generator/infrastructure/adapters/__init__.py`
+  - `src/generator/infrastructure/adapters/system_clock.py`
+- **Acceptance Criteria:**
+  - `IClock` interface defined
+  - `SystemClock` implements `IClock`
+  - Clock is injectable for testing
+
+### Task 004: HTTP Controller
+- **Layer:** Transport
+- **Effort:** 2h
+- **Files Created:**
+  - `src/generator/interfaces/__init__.py`
+  - `src/generator/interfaces/http/__init__.py`
+  - `src/generator/interfaces/http/router.py`
+- **Acceptance Criteria:**
+  - GET /generate returns `{"id": <64-bit-int>}`
+  - HTTP 200 on success
+  - HTTP 500 on error with `{"error": "...", "code": "..."}`
+
+### Task 005: Health Endpoint
+- **Layer:** Transport
+- **Effort:** 1h
+- **Files Created:**
+  - `src/generator/interfaces/health/__init__.py`
+  - `src/generator/interfaces/health/controller.py`
+- **Acceptance Criteria:**
+  - GET /health returns `{"status": "ok", "instance": "dc-01-machine-01", ...}`
+  - HTTP 200 when healthy
+  - HTTP 503 when unhealthy
+
+### Task 006: Metrics Endpoint
+- **Layer:** Transport
+- **Effort:** 2h
+- **Files Created:**
+  - `src/generator/interfaces/metrics/__init__.py`
+  - `src/generator/interfaces/metrics/controller.py`
+- **Acceptance Criteria:**
+  - GET /metrics returns Prometheus format
+  - `ids_generated_total` counter exposed
+  - `request_duration_seconds` histogram exposed
+
+### Task 007: Unit Tests for Domain
+- **Layer:** Testing
+- **Effort:** 4h
+- **Files Created:**
+  - `tests/__init__.py`
+  - `tests/unit/__init__.py`
+  - `tests/unit/domain/__init__.py`
+  - `tests/unit/domain/test_snowflake_id.py`
+  - `tests/unit/domain/test_id_generator.py`
+- **Acceptance Criteria:**
+  - ≥80% coverage on domain layer
+  - All tests pass
+  - ID uniqueness verified
+  - Sequence overflow handling tested
+
+---
 
 ## BDD Acceptance Criteria
 
@@ -34,7 +114,31 @@ Then the generator waits for the next millisecond
 And returns a unique ID with sequence=0
 ```
 
+### Scenario: Clock goes backwards
+```
+Given the system clock went backwards by more than 10ms
+When I call GET /generate
+Then I receive HTTP 500
+And the response contains {"code": "CLOCK_BACKWARDS"}
+```
+
+---
+
+## Definition of Done
+
+- [ ] All 7 tasks completed
+- [ ] GET /generate works and returns unique IDs
+- [ ] GET /health works and returns correct status
+- [ ] GET /metrics returns Prometheus format
+- [ ] Unit tests pass with ≥80% coverage
+- [ ] Lint clean
+- [ ] Typecheck clean
+
 ## Status
 - [ ] Not started
 - [ ] In progress
 - [ ] Complete
+
+## Related
+- Parent: Phase 300 Coding
+- Design: `docs/200.design/02-hexagonal/202.hexagonal-architecture.md`
