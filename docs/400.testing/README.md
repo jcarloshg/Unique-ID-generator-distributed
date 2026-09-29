@@ -78,5 +78,5 @@ Certify the ID Generator service through automated testing, validating correctne
 - [x] Phase 400 initiated
 - [x] Unit tests pass (19 tests)
 - [x] Integration tests pass (14 tests)
-- [ ] Load tests pass (TBD)
+- [ ] Load tests pass (TBD - k6 not created)
 - [ ] Release candidate certified

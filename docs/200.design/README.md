@@ -26,10 +26,10 @@ docs/200.design/
 | 5 | Deployment Specifications | Docker, docker-compose, resource sizing |
 
 ## Prerequisites
-- [ ] Phase 100 (Planning) complete
-- [ ] OpenAPI contracts frozen
-- [ ] ADRs signed off
-- [ ] NFRs validated
+- [x] Phase 100 (Planning) complete
+- [x] OpenAPI contracts frozen
+- [x] ADRs signed off
+- [x] NFRs validated
 
 ## Deliverables
 

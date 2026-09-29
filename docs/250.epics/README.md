@@ -70,5 +70,15 @@ Each task must be:
 - [x] All epics broken down with tasks ✅
 - [x] Ready for sprint planning
 
+## Implementation Status
+
+| Epic | Status | Notes |
+|------|--------|-------|
+| 001 Generator Core | ✅ Complete | 33 tests pass |
+| 002 Persistence | ✅ Complete | IDs persist to Postgres |
+| 003 Load Balancing | ✅ Complete | nginx + 3 generators |
+| 004 Monitoring | ⚠️ Partial | Basic HTML only, no JS polling |
+| 005 Infrastructure | ✅ Complete | docker-compose works |
+
 ## Next Phase
 → Phase 300 — Coding

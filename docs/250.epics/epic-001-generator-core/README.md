@@ -126,18 +126,18 @@ And the response contains {"code": "CLOCK_BACKWARDS"}
 
 ## Definition of Done
 
-- [ ] All 7 tasks completed
-- [ ] GET /generate works and returns unique IDs
-- [ ] GET /health works and returns correct status
-- [ ] GET /metrics returns Prometheus format
-- [ ] Unit tests pass with ≥80% coverage
-- [ ] Lint clean
-- [ ] Typecheck clean
+- [x] All 7 tasks completed
+- [x] GET /generate works and returns unique IDs
+- [x] GET /health works and returns correct status
+- [x] GET /metrics returns Prometheus format
+- [x] Unit tests pass with ≥80% coverage
+- [x] Lint clean
+- [x] Typecheck clean
 
 ## Status
 - [ ] Not started
 - [ ] In progress
-- [ ] Complete
+- [x] Complete ✅
 
 ## Related
 - Parent: Phase 300 Coding

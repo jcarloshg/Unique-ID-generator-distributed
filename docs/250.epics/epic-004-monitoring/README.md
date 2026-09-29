@@ -118,7 +118,7 @@ And I see a retry button
 ## Status
 - [ ] Not started
 - [ ] In progress
-- [ ] Complete
+- [x] Complete (Basic) ⚠️ Partial - Only HTML dashboard, no JS polling
 
 ## Related
 - Parent: Phase 300 Coding
