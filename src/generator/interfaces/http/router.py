@@ -1,25 +1,14 @@
 """HTTP Router - Transport Layer."""
 
-from typing import Any
-
 import structlog
-from fastapi import APIRouter, FastAPI, Request
+from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse, Response
 
-from generator.domain.services.id_generator import ClockBackwardsError, IdGeneratorService
+from generator.domain.services.id_generator import ClockBackwardsError
 
 logger = structlog.get_logger()
 
 router = APIRouter(prefix="", tags=["id"])
-
-
-def create_id_generator(app: FastAPI) -> IdGeneratorService:
-    """Factory function to create IdGeneratorService with app state."""
-    return IdGeneratorService(
-        clock=app.state.clock,
-        datacenter_id=app.state.datacenter_id,
-        machine_id=app.state.machine_id,
-    )
 
 
 @router.get("/generate")
@@ -33,8 +22,7 @@ async def generate_id(request: Request) -> Response:
         500: If clock moved backwards or other error
     """
     try:
-        generator = create_id_generator(request.app)
-        snowflake_id = generator.generate_id()
+        snowflake_id = request.app.state.id_generator.generate_id()
         return JSONResponse(content={"id": snowflake_id.value})
     except ClockBackwardsError as e:
         logger.error(
