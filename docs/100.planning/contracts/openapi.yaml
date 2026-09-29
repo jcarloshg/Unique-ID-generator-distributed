@@ -1,0 +1,269 @@
+openapi: 3.0.3
+info:
+  title: Unique ID Generator API
+  version: 1.0.0
+  description: |
+    Distributed unique ID generation service based on Twitter Snowflake algorithm.
+    
+    ## Overview
+    This service generates globally unique, time-ordered 64-bit numerical IDs
+    suitable for distributed systems. Each ID contains:
+    - Timestamp (41 bits) - milliseconds since epoch
+    - Datacenter ID (5 bits) - identifies the datacenter
+    - Machine ID (5 bits) - identifies the machine within the datacenter
+    - Sequence (12 bits) - auto-incrementing counter per millisecond
+    
+    ## Rate Limits
+    - Per generator: 4,096 IDs/ms (4096 IDs/second)
+    - System total: 12,288 IDs/second (3 generators)
+    
+    ## Error Codes
+    - `GENERATORS_UNAVAILABLE` - All generator instances are down
+    - `INTERNAL_ERROR` - Unexpected error during ID generation
+    - `TIMEOUT` - Request timed out
+
+servers:
+  - url: http://localhost:80
+    description: Local development server
+
+tags:
+  - name: ID Generation
+    description: Endpoints for generating unique IDs
+  - name: Monitoring
+    description: Health check and monitoring endpoints
+
+paths:
+  /generate:
+    get:
+      summary: Generate a unique ID
+      description: |
+        Generates a globally unique 64-bit ID using the Snowflake algorithm.
+        
+        The ID is composed of:
+        - Timestamp: milliseconds since November 4, 2010 (Twitter epoch)
+        - Datacenter ID: 5-bit identifier (0-31)
+        - Machine ID: 5-bit identifier (0-31)
+        - Sequence: 12-bit auto-incrementing counter (0-4095)
+        
+        IDs are guaranteed to be:
+        - Globally unique across all generators
+        - Time-ordered within a single generator
+        - Sortable by timestamp
+      operationId: generateId
+      tags:
+        - ID Generation
+      security: []
+      responses:
+        '200':
+          description: Successfully generated unique ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateResponse'
+              example:
+                id: 1825478541164436481
+        '503':
+          description: |
+            Service Unavailable - All generator instances are unavailable.
+            Clients should retry with exponential backoff.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: No generators available
+                code: GENERATORS_UNAVAILABLE
+        '500':
+          description: Internal server error during ID generation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: Clock went backwards
+                code: INTERNAL_ERROR
+
+  /health:
+    get:
+      summary: Health check for a generator instance
+      description: |
+        Returns the health status of the generator instance.
+        
+        Use this endpoint for:
+        - Load balancer health checks
+        - Monitoring dashboard data
+        - Kubernetes readiness probes
+      operationId: healthCheck
+      tags:
+        - Monitoring
+      security: []
+      responses:
+        '200':
+          description: Generator instance is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              example:
+                status: ok
+                instance: dc-01-machine-03
+                uptime_seconds: 86400
+                ids_generated: 1234567890
+        '503':
+          description: Generator instance is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              example:
+                status: down
+                instance: dc-01-machine-03
+                error: "Clock synchronization lost"
+
+  /metrics:
+    get:
+      summary: Get generator metrics
+      description: |
+        Returns detailed metrics for monitoring and observability.
+        
+        Includes:
+        - IDs generated counter
+        - Request latency histogram
+        - Error counts by type
+        - Memory and CPU usage
+      operationId: getMetrics
+      tags:
+        - Monitoring
+      security: []
+      responses:
+        '200':
+          description: Metrics retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricsResponse'
+
+components:
+  schemas:
+    GenerateResponse:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+          format: int64
+          minimum: 0
+          maximum: 18446744073709551615
+          description: |
+            64-bit unique identifier.
+            
+            Bit layout:
+            - Bits 63: Sign bit (always 0)
+            - Bits 62-22: Timestamp (41 bits)
+            - Bits 21-17: Datacenter ID (5 bits)
+            - Bits 16-12: Machine ID (5 bits)
+            - Bits 11-0: Sequence (12 bits)
+          example: 1825478541164436481
+
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - instance
+      properties:
+        status:
+          type: string
+          enum:
+            - ok
+            - degraded
+            - down
+          description: |
+            Current health status:
+            - `ok`: Instance is healthy and accepting requests
+            - `degraded`: Instance is functioning but with limitations
+            - `down`: Instance is not accepting requests
+          example: ok
+        instance:
+          type: string
+          pattern: '^dc-[0-9]{2}-machine-[0-9]{2}$'
+          description: |
+            Unique identifier for this generator instance.
+            Format: dc-{datacenter_id}-machine-{machine_id}
+          example: dc-01-machine-03
+        uptime_seconds:
+          type: integer
+          format: int64
+          description: Number of seconds since instance started
+          example: 86400
+        ids_generated:
+          type: integer
+          format: int64
+          description: Total number of IDs generated by this instance
+          example: 1234567890
+        error:
+          type: string
+          description: Error message if status is not 'ok'
+          example: "Clock synchronization lost"
+
+    MetricsResponse:
+      type: object
+      properties:
+        instance:
+          type: string
+          example: dc-01-machine-03
+        timestamp:
+          type: string
+          format: date-time
+          example: "2026-09-29T12:00:00Z"
+        counters:
+          type: object
+          properties:
+            ids_generated:
+              type: integer
+              format: int64
+            requests_total:
+              type: integer
+              format: int64
+            errors_total:
+              type: integer
+              format: int64
+        histograms:
+          type: object
+          properties:
+            request_latency_ms:
+              type: object
+              properties:
+                p50:
+                  type: number
+                p95:
+                  type: number
+                p99:
+                  type: number
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - code
+      properties:
+        error:
+          type: string
+          description: Human-readable error message
+          example: No generators available
+        code:
+          type: string
+          description: Machine-readable error code
+          enum:
+            - GENERATORS_UNAVAILABLE
+            - INTERNAL_ERROR
+            - TIMEOUT
+            - VALIDATION_ERROR
+          example: GENERATORS_UNAVAILABLE
+        details:
+          type: string
+          description: Additional error details for debugging
+        retry_after_ms:
+          type: integer
+          description: Suggested retry delay in milliseconds
+          example: 1000
