@@ -99,3 +99,4 @@ docs/
 - [OpenAPI Specification](100.planning/103-functional/contracts/openapi.yaml)
 - [Architecture Diagrams](100.planning/102-technical/diagrams/)
 - [ADRs](100.planning/102-technical/adr/)
+- [NFR Documents](100.planning/104-nfr/)
