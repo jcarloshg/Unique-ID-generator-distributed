@@ -30,6 +30,35 @@ A distributed Snowflake-style ID generator capable of 10,000+ RPS with PostgreSQ
                               └───────────┘
 ```
 
+## Sequence Diagram
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant nginx
+    participant Generator
+    participant IdService
+    participant Clock
+    participant Snowflake
+    participant Queue
+    participant Postgres
+
+    Client->>nginx: GET /generate
+    nginx->>Generator: Route (least_conn)
+    Generator->>IdService: generate_id()
+    IdService->>Clock: now_ms()
+    Clock-->>IdService: timestamp_ms
+    IdService->>Snowflake: new SnowflakeId(timestamp, dc_id, machine_id, sequence)
+    Snowflake-->>IdService: snowflake_id
+    IdService-->>Generator: snowflake_id
+    Generator->>Queue: enqueue(snowflake_id)
+    Generator-->>Client: 200 {"id": 760045091229405184}
+
+    Note over Queue: Background worker
+    Queue->>Queue: Batch (up to 100)
+    Queue->>Postgres: INSERT INTO generated_ids
+```
+
 ## Quick Start
 
 ```bash
