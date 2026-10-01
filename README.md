@@ -1,30 +1,115 @@
-# Unique ID generator distributed
+# Unique ID Generator Distributed
+
+A distributed Snowflake-style ID generator capable of 10,000+ RPS with PostgreSQL persistence and real-time monitoring.
 
 ## Requirements
 
-- IDs must be unique and sortable.
-- IDs are ordered by date.
-- IDs are numerical values only.
-- IDs fit into 64-bit.
-- Ability to generate over 10,000 unique IDs per second.
+- ✅ Unique, sortable 64-bit numeric IDs
+- ✅ Ordered by generation timestamp
+- ✅ 10,000+ IDs per second per instance
+- ✅ Horizontally scalable across 3+ instances
 
-![reference image 64 bits](<Captura de pantalla 2026-09-28 a las 11.45.31 p. m..png>)
+## Architecture
 
-Each section is explained below.
+```
+                    ┌─────────────────────────────────────┐
+                    │              nginx                 │
+                    │          (least_conn LB)           │
+                    └──────────┬──────────┬──────────┬─────┘
+                             │          │          │
+              ┌──────────────┴──┐  ┌───┴────┐  ┌──┴───────────┐
+              │  Generator 1   │  │   G2   │  │  Generator 3  │
+              │  :5001 (dc-1,m1)│  │:5002   │  │ :5003 (dc-1,m3)│
+              └────────┬─────────┘  └───┬────┘  └───────┬───────┘
+                       │              │                │
+                       └──────────────┼────────────────┘
+                                     │
+                              ┌──────┴──────┐
+                              │ PostgreSQL │
+                              │  :5432    │
+                              └───────────┘
+```
 
-- Sign bit: 1 bit. It will always be 0. This is reserved for future uses. It can potentially be used to distinguish between signed and unsigned numbers.
-- Timestamp: 41 bits. Milliseconds since the epoch or custom epoch. We use Twitter snowflake default epoch 1288834974657, equivalent to Nov 04, 2010, 01:42:54 UTC.
-- Datacenter ID: 5 bits, which gives us 2 ^ 5 = 32 datacenters.
-- Machine ID: 5 bits, which gives us 2 ^ 5 = 32 machines per datacenter.
-- Sequence number: 12 bits. For every ID generated on that machine/process, the sequence number is incremented by 1. The number is reset to 0 every millisecond.
+## Quick Start
 
-## technical
+```bash
+# Start all services
+docker compose up -d
 
-use: 
-- docker
-- nginx
-- use one instance of postgres to save all ids
-- 3 instances of tha service if generator
-  - use python
-  - implement integration tests
-- use vite for small web app
+# Generate an ID
+curl http://localhost/generate
+# {"id":760045091229405184}
+
+# Check health
+curl http://localhost/health
+# {"status":"ok","instance":"dc-1-machine-1","uptime_seconds":123.45}
+
+# View dashboard
+open http://localhost:3000
+```
+
+## API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/generate` | GET | Generate a unique Snowflake ID |
+| `/health` | GET | Instance health status |
+| `/metrics` | GET | Prometheus metrics |
+
+## Snowflake ID Structure
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                         64-bit Snowflake ID                             │
+├────────────────────────┬───────────┬───────────┬────────────────────────┤
+│    Timestamp (42b)    │  DataCenter│  Machine  │      Sequence         │
+│  milliseconds since   │   ID (5b) │   ID (5b) │       (12b)          │
+│    2021-01-01 UTC    │   0-31    │   0-31    │      0-4095          │
+└────────────────────────┴───────────┴───────────┴────────────────────────┘
+```
+
+**Epoch:** January 1, 2021 00:00:00 UTC
+
+## Tech Stack
+
+| Component | Technology |
+|-----------|------------|
+| Generator | Python + FastAPI |
+| Load Balancer | nginx |
+| Database | PostgreSQL |
+| Dashboard | HTML + Vanilla JS |
+
+## Project Structure
+
+```
+src/generator/
+├── domain/
+│   ├── models/snowflake_id.py      # 64-bit ID model
+│   ├── services/id_generator.py    # Snowflake algorithm
+│   └── ports/                      # Interfaces (IClock, IIdPersistence)
+├── infrastructure/
+│   ├── adapters/
+│   │   ├── system_clock.py         # System time
+│   │   ├── async_pg_repository.py # PostgreSQL persistence
+│   │   └── degradable_repository.py # Circuit breaker
+│   └── persistence/
+│       └── async_queue.py         # Batch write queue
+└── interfaces/
+    ├── http/router.py             # /generate endpoint
+    ├── health/controller.py       # /health endpoint
+    └── metrics/controller.py      # /metrics endpoint
+```
+
+## Key Features
+
+- **Non-blocking persistence** — IDs returned immediately, DB writes async
+- **Batch inserts** — Up to 100 IDs per PostgreSQL write
+- **Graceful degradation** — Service continues if DB fails (circuit breaker)
+- **Horizontal scaling** — Add instances behind nginx
+- **Unique IDs** — Guaranteed unique within a machine (sequence)
+
+## Documentation
+
+- [System Architecture](docs/200.design/01-architecture/201.system-architecture.md)
+- [API Contracts](docs/100.planning/103-functional/contracts/openapi.yaml)
+- [Database Schema](docs/200.design/03-database/203.database-schema.md)
