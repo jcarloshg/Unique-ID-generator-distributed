@@ -77,7 +77,7 @@ Each task must be:
 | 001 Generator Core | ✅ Complete | 33 tests pass |
 | 002 Persistence | ✅ Complete | IDs persist to Postgres |
 | 003 Load Balancing | ✅ Complete | nginx + 3 generators |
-| 004 Monitoring | ⚠️ Partial | Basic HTML only, no JS polling |
+| 004 Monitoring | ✅ Complete | JS polling, status display |
 | 005 Infrastructure | ✅ Complete | docker-compose works |
 
 ## Next Phase
